@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>HienVD Type Ahead 👀</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <form class="search-form">
+        <input type="text" class="search" placeholder="Tìm thành phố ở VN">
+        <ul class="suggestions">
+            <li>Tìm theo tên thành phố</li>
+            <li>hoặc tên tỉnh</li>
+        </ul>
+    </form>
+    <script>
+        const endpoint = 'https://raw.githubusercontent.com/hienvd/vietnam-cities-list/master/cities.json';
+        const cities = [];
+
+        fetch(endpoint)
+            .then(blob => blob.json())
+            .then(data => cities.push(...data))
+
+        function findMatches(wordToMatch, cities) {
+            return cities.filter(place => {
+                const regex = new RegExp(wordToMatch, 'gi');
+                return place.city.match(regex) || place.province.match(regex);
+            });
+        }
+
+        function displayMatches() {
+            const matchArray = findMatches(this.value, cities);
+            const html = matchArray.map(place => {
+                const regex = new RegExp(this.value, 'gi');
+                const cityName = place.city.replace(regex, `<span class="hl">${this.value}</span>`);
+                const provinceName = place.province.replace(regex, `<span class="hl">${this.value}</span>`);
+                return `
+                <li>
+                    <span class="name"> ${cityName}, ${provinceName} </span>
+                    <span class="population"> ${place.population} </span>
+                </li>
+                `
+            }).join('');
+
+            suggestions.innerHTML = html;
+        }
+
+        const searchInput = document.querySelector('.search');
+        const suggestions = document.querySelector('.suggestions');
+
+        searchInput.addEventListener('change', displayMatches);
+        searchInput.addEventListener('keyup', displayMatches);
+    </script>
+</body>
+
+</html>
